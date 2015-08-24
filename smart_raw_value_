@@ -1,1 +1,50 @@
+#!/bin/bash
+#
+# ## Munin for plug-ins to get the Raw_value of SMART
+# by HimaJyun(http://jyn.jp/)
+#
+# Config
+# [smart_raw_value_*]
+# user root
+#
+#%# family=auto
+#%# capabilities=autoconf suggest
+LANG=C
+smartctl=$(which smartctl)
+device=`echo "${0##*/}" | sed s/smart_raw_value_//g`
 
+if [ "$1" = "autoconf" ]; then
+    if [ -x "$smartctl" ]; then
+        echo yes
+        exit 0
+    else
+        echo "no (smartctl is not exist.)"
+        exit 1
+    fi
+fi
+
+smart_out=`"${smartctl}" -a /dev/"${device}" -d auto | grep -s -e '^  [0-9]' -e '^ [0-9]' -e '^[0-9]' | sed -r -e 's/^ +//g' -e 's/ +/ /g'`
+row=`echo "${smart_out}" | wc -l`
+
+for ((i=0; i < $row; i++)); do
+    smart_name[i]=`echo "${smart_out}" | sed -n $((${i}+1))p | awk '{print $2}'`
+    smart_value[i]=`echo "${smart_out}" | sed -n $((${i}+1))p | awk '{print $10}'`
+done
+
+if [ "$1" = "config" ]; then
+  echo "graph_title S.M.A.R.T Raw_Values of ${device}"
+  echo 'graph_args --base 1000 -l 0'
+  echo 'graph_vlabel S.M.A.R.T Raw Value'
+  echo 'graph_category disk'
+  echo 'graph_info Please be careful on the value of the Reallocated_Sector_Ct and Current_Pending_Sector.'
+
+  for ((i=0; i < $row; i++)); do
+    echo "${smart_name[i]}.label ${smart_name[i]}"
+    echo "${smart_name[i]}.info ${smart_value[i]}"
+  done
+  exit 0
+fi
+
+for ((i=0; i < $row; i++)); do
+    echo "${smart_name[i]}.value ${smart_value[i]}"
+done
