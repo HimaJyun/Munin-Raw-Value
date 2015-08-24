@@ -11,7 +11,8 @@ MuninのRawValueを取得できますわよ。
 #### 2.Install this plugin
 1.Download this plugin  
 2.sudo mv /your_download_directory/smart_raw_value_ /usr/share/munin/plugins/smart_raw_value_  
-3.sudo ln -s /usr/share/munin/plugins/smart_raw_value_ /etc/munin/plugins/smart_raw_value_[device]
+3.sudo chmod 755 /usr/share/munin/plugins/smart_raw_value_  
+4.sudo ln -s /usr/share/munin/plugins/smart_raw_value_ /etc/munin/plugins/smart_raw_value_[device]
 
 [device example]  
 /dev/sda is  
